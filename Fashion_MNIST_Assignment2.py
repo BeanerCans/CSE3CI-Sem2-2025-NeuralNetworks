@@ -50,3 +50,56 @@ def evaluate_and_print(model, x_test, y_test_cat):
     print(f"Test Loss: {loss:.4f} | Test Accuracy: {acc:.4f}")
     return loss, acc
 
+# 2. Task 1: Models without convolution (Dense networks)
+
+# Baseline dense: Flatten -> Dense(128) -> Dense(10)
+def build_dense_baseline():
+    model = models.Sequential([
+        layers.Input(shape=(28, 28, 1)),
+        layers.Flatten(),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.2),
+        layers.Dense(num_classes, activation='softmax')
+    ])
+    return model
+
+# Improved dense: Flatten -> Dense(512) -> Dense(256) -> Dense(10)
+def build_dense_improved():
+    model = models.Sequential([
+        layers.input(shape=(28, 28, 1)),
+        layers.Flatten(),
+        layers.Dense(512, activation='relu'),
+        layers.Dropout(0.4),
+        layers.Dense(256, activation='relu'),
+        layers.Dropout(0.3),
+        layers.Dense(num_classes, activation='softmax')
+    ])
+    return model
+
+# Compile & train helper
+def compile_and_train(model, optimizer, epochs=10, batch_size=128, use_val=False):
+    model.compile(optimizer=optimizer,
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+    if use_val:
+        history = model.fit(x_train, y_train_cat, validation_data=(x_test, y_test_cat),
+                            epochs=epochs, batch_size=batch_size, verbose=2)
+    else:
+        history = model.fit(x_train, y_train_cat, epochs=epochs, batch_size=batch_size, verbose=2)
+    return history
+
+# Run dense baseline
+dense1 = build_dense_baseline()
+print("Dense baseline summary:")
+dense1.summary()
+hist_dense1 = compile_and_train(dense1, optimizer='adam', epochs=8)
+plot_history(hist_dense1, "Dense Baseline")
+loss_d1, acc_d1 = evaluate_and_print(dense1, x_test, y_test_cat)
+
+# Run improved dense
+dense2 = build_dense_improved()
+print("Dense improved summary:")
+dense2.summary()
+hist_dense2 = compile_and_train(dense2, optimizer='adam', epochs=10)
+plot_history(hist_dense2, "Dense Improved")
+loss_d2, acc_d2 = evaluate_and_print(dense2, x_test, y_test_cat)
