@@ -154,3 +154,57 @@ cnn2.summary()
 hist_cnn2 = compile_and_train(cnn2, optimizer='adam', epochs=12)
 plot_history(hist_cnn2, "CNN Improved")
 loss_c2, acc_c2 = evaluate_and_print(cnn2, x_test, y_test_cat)
+
+# 4. Task 3: Change optimizer / learning rate
+
+# Try SGD with a small learning rate vs Adam
+def train_optimizer_experiments(model_builder, optimizers_to_try, epochs=12):
+    results = {}
+    for name, opt in optimizerz_to_try.items():
+        model = model_builder()
+        model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+        print(f"\nTraining with optimiser: {name}")
+        history = model.fit(x_train, y_train_cat, epochs=epochs, batch_size=128, verbose=2)
+        loss, acc = model.evaluate(x_test, y_test_cat, verbose=0)
+        results[name] = {'history': history, 'loss': loss, 'acc': acc, 'model': model}
+    return results
+
+opt_exps = {
+    'Adam_default': optimizers.Adam(),
+    'SGD_lr_0.01': optimizers.SGD(learning_rate=0.01, momentum=0.9),
+    'SGD_lr_0.001': optimizers.SGD(learning_rate=0.001, momentum=0.9)
+}
+
+# Use the improved CNN architecture for optimiser experiments
+opt_results = train_optimizer_experiments(build_cnn_improved, opt_exps, epochs=8)
+
+for name, res in opt_results.items():
+    print(f"Optimiser: {name} => Test acc: {res['acc']:.4f}, Test loss: {res['loss']:.4f}")
+
+# Collect and print a siimple ranking of experiments
+all_results = {
+    'Dense Baseline': acc_d1,
+    'Dense Improved': acc_d2,
+    'CNN Baseline': acc_c1,
+    'CNN Improved': acc_c2
+}
+
+# add optimiser experiments
+for name, res in opt_results.items():
+    all_results[f'CNN_improved_{name}'] = res['acc']
+
+# Sort by accuracy descending
+ranking = sorted(all_results.items(), key=lambda kv: kv[1], reverse=True)
+print("\n=== Model ranking by test accuracy ===")
+for i, (name, acc) in enumerate(ranking, 1):
+    print(f"{i}. {name}: {acc:.4f}")
+
+# End of Script
+
+# Save figures 
+output_dir = "assignment2_outputs"
+os.makedirs(output_dir, exist_ok=True)
+
+# Save the last plotted figure
+plt.savefig(os.path.join(output_dir, f"accuracy_loss={datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"))
+print(f"Outputs (if any) saved to {output_dir}")
