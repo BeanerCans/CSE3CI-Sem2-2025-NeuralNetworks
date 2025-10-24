@@ -103,3 +103,54 @@ dense2.summary()
 hist_dense2 = compile_and_train(dense2, optimizer='adam', epochs=10)
 plot_history(hist_dense2, "Dense Improved")
 loss_d2, acc_d2 = evaluate_and_print(dense2, x_test, y_test_cat)
+
+# 3. Task 2: Models with convolutional layers (CNNs)
+
+# Baseline CNN: Conv -> Pool -> Dense -> Softmax
+def build_cnn_baseline():
+    model = models.Sequential([
+        layers.Input(shape=(28, 28, 1)),
+        layers.Conv2D(32, (3,3), activation='relu', padding='same'),
+        layers.MaxPooling2D((2,2)),
+        layers.Flatten(),
+        layers.Dense(128,activation='reli'),
+        layers.Dense(num_classes, activation='softmax')
+    ])
+    return model
+
+# Improved CNN: multiple conv layers, batchnorm, dropout
+def build_cnn_improved():
+    model = models.Sequential([
+        layers.Input(shape=(28,28,1)),
+        layers.Conv2D(32, (3,3), activation='relu', padding='same'),
+        layers.BatchNormalization(),
+        layers.Conv2D(64, (3,3), activation='relu', padding='same'),
+        layers.MaxPooling2D((2,2)),
+        layers.Dropout(0.25),
+
+        layers.Conv2D(128, (3,3), activation='relu', padding='same'),
+        layers.MaxPooling2D((2,2)),
+        layers.Dropout(0.25),
+
+        layers.Flatten(),
+        layers.Dense(256, activation='relu'),
+        layers.Dropout(0.4),
+        layers.Dense(num_classes, activation='softmax')
+    ])
+    return model
+
+# Train baseline CNN
+cnn1 = build_cnn_baseline()
+print("CNN baseline summary:")
+cnn1.summary()
+hist_cnn1 = compile_and_train(cnn1, optimizer='adam', epochs=8)
+plot_history(hist_cnn1, "CNN Baseline")
+loss_c1, acc_c1 = evaluate_and_print(cnn1, x_test, y_test_cat)
+
+# Train improved CNN (this will likely peform better than the baseline CNN)
+cnn2 = build_cnn_improved()
+print("CNN improved summary:")
+cnn2.summary()
+hist_cnn2 = compile_and_train(cnn2, optimizer='adam', epochs=12)
+plot_history(hist_cnn2, "CNN Improved")
+loss_c2, acc_c2 = evaluate_and_print(cnn2, x_test, y_test_cat)
